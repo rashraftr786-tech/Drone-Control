@@ -196,12 +196,7 @@
 </div>
 
 <script>
-  // ------------------------------------------------------------------
-  // Configuration
-  // ------------------------------------------------------------------
-  const API_BASE = 'http://localhost:3000/api';
-
-  // DOM references
+  // ─── DOM references ──────────────────────────────────────────
   const canvas = document.getElementById('droneCanvas');
   const ctx = canvas.getContext('2d');
 
@@ -219,84 +214,43 @@
   const btnEmergency = document.getElementById('btnEmergency');
   const btnLand = document.getElementById('btnLand');
 
-  // ------------------------------------------------------------------
-  // State
-  // ------------------------------------------------------------------
-  let droneData = {
-    status: 'IDLE',
-    battery: 0,
-    position: { lat: 0, lng: 0, alt: 0 },
+  // ─── Mock state ──────────────────────────────────────────────
+  let state = {
+    status: 'IDLE',          // IDLE | FLYING | EMERGENCY | LANDING
+    battery: 85,
+    position: { lat: 48.8584, lng: 2.2945, alt: 0 },
     speed: 0,
-    heading: 0,
+    heading: 45,
     target: null
   };
 
-  // ------------------------------------------------------------------
-  // Helper functions
-  // ------------------------------------------------------------------
-  function getStatusBadgeClass(status) {
-    const map = {
-      'IDLE': 'idle',
-      'FLYING': 'flying',
-      'EMERGENCY': 'emergency',
-      'LANDING': 'landing'
-    };
-    return map[status] || 'idle';
-  }
+  let timer = null;
 
-  // ------------------------------------------------------------------
-  // Fetch telemetry
-  // ------------------------------------------------------------------
-  async function fetchTelemetry() {
-    try {
-      const resp = await fetch(`${API_BASE}/telemetry`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      droneData = data;
-      updateUI(data);
-      drawCanvas(data);
-    } catch (err) {
-      console.error('Telemetry fetch error:', err);
-      extraInfo.textContent = '⚠️ Connection error';
-    }
-  }
-
-  // ------------------------------------------------------------------
-  // Update UI cards
-  // ------------------------------------------------------------------
+  // ─── Update UI from state ────────────────────────────────────
   function updateUI(data) {
-    // Status
     const status = data.status || 'IDLE';
     statusDisplay.textContent = status;
     statusBadge.textContent = status;
     statusBadge.className = `status-badge ${getStatusBadgeClass(status)}`;
 
-    // Battery
     const bat = data.battery || 0;
     batteryDisplay.textContent = bat + '%';
     batteryDisplay.className = 'value battery';
     if (bat < 20) batteryDisplay.className += ' danger';
     else if (bat < 50) batteryDisplay.className += ' warning';
 
-    // Altitude
     const alt = data.position?.alt || 0;
     altDisplay.textContent = alt.toFixed(1) + ' m';
 
-    // Speed
     const speed = data.speed || 0;
     speedDisplay.textContent = speed.toFixed(1) + ' m/s';
 
-    // Heading
     const heading = data.heading || 0;
     headingDisplay.textContent = Math.round(heading) + '°';
 
-    // Position
     const pos = data.position;
-    if (pos) {
-      posDisplay.textContent = `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
-    }
+    if (pos) posDisplay.textContent = `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
 
-    // Extra info (target if moving)
     if (data.target) {
       const t = data.target;
       extraInfo.textContent = `🎯 Moving to (${t.lat.toFixed(5)}, ${t.lng.toFixed(5)}, ${t.alt}m)`;
@@ -304,7 +258,6 @@
       extraInfo.textContent = data.status === 'FLYING' ? '⏳ Hovering' : '🟢 Ready';
     }
 
-    // Enable/disable buttons based on state
     const isFlying = status === 'FLYING';
     const isIdle = status === 'IDLE';
     btnTakeoff.disabled = isFlying || status === 'EMERGENCY';
@@ -313,52 +266,38 @@
     btnLand.disabled = !isFlying;
   }
 
-  // ------------------------------------------------------------------
-  // Draw canvas (drone position on a 2D map)
-  // ------------------------------------------------------------------
+  function getStatusBadgeClass(status) {
+    const map = { 'IDLE': 'idle', 'FLYING': 'flying', 'EMERGENCY': 'emergency', 'LANDING': 'landing' };
+    return map[status] || 'idle';
+  }
+
+  // ─── Draw canvas ─────────────────────────────────────────────
   function drawCanvas(data) {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    // Background grid (simulated map)
+    // Grid
     ctx.strokeStyle = '#3a4a5a';
     ctx.lineWidth = 0.5;
     for (let i = 0; i < w; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, h);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
     }
     for (let i = 0; i < h; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, i);
-      ctx.lineTo(w, i);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
     }
 
-    // If we have position, map lat/lng to canvas
     const pos = data.position;
     if (pos && pos.lat && pos.lng) {
-      // We'll center the view around the current position, but we need a scale.
-      // For simplicity, we use a fixed reference (Eiffel Tower area) and zoom.
-      // We'll translate lat/lng to pixel using a simple mercator-like projection.
-      // Center of canvas: (w/2, h/2). Scale factor: degrees per pixel.
-      // Use a scale of 0.0001 deg per pixel (approx 11m per pixel)
-      const scale = 0.0001; // degrees per pixel
-      const centerLat = 48.8584, centerLng = 2.2945; // Eiffel Tower
+      const scale = 0.0001;
+      const centerLat = 48.8584, centerLng = 2.2945;
       const dx = (pos.lng - centerLng) / scale;
-      const dy = (pos.lat - centerLat) / scale; // latitude increases north => y decreases
-
-      // Draw drone icon
+      const dy = (pos.lat - centerLat) / scale;
       const x = w/2 + dx;
-      const y = h/2 - dy; // invert y
-
-      // Clamp to canvas edges (with margin)
+      const y = h/2 - dy;
       const margin = 20;
       const cx = Math.min(Math.max(x, margin), w - margin);
       const cy = Math.min(Math.max(y, margin), h - margin);
 
-      // Drone body (circle)
       ctx.shadowColor = 'rgba(46, 204, 113, 0.5)';
       ctx.shadowBlur = 20;
       ctx.beginPath();
@@ -367,7 +306,6 @@
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Heading line
       const headingRad = data.heading * Math.PI / 180;
       const length = 30;
       ctx.beginPath();
@@ -377,13 +315,11 @@
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Label with altitude
       ctx.fillStyle = 'white';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`alt: ${data.position.alt.toFixed(1)}m`, cx, cy - 28);
 
-      // Target if any
       if (data.target) {
         const tdx = (data.target.lng - centerLng) / scale;
         const tdy = (data.target.lat - centerLat) / scale;
@@ -408,29 +344,73 @@
     }
   }
 
-  // ------------------------------------------------------------------
-  // Control API calls
-  // ------------------------------------------------------------------
-  async function sendCommand(endpoint, payload = {}) {
-    try {
-      const resp = await fetch(`${API_BASE}/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const result = await resp.json();
-      if (!resp.ok) {
-        alert(`Error: ${result.error || 'Unknown error'}`);
-      } else {
-        // Success – telemetry will update automatically
-        console.log('Command success:', result);
+  // ─── Simulate telemetry update ──────────────────────────────
+  function simulateTelemetry() {
+    if (state.status === 'FLYING') {
+      // Random walk position
+      state.position.lat += (Math.random() - 0.5) * 0.0002;
+      state.position.lng += (Math.random() - 0.5) * 0.0002;
+      // Slight altitude drift
+      state.position.alt += (Math.random() - 0.5) * 0.5;
+      state.heading = (state.heading + (Math.random() - 0.5) * 4) % 360;
+      state.speed = 2 + Math.random() * 4;
+      // Battery drain (slow)
+      state.battery = Math.max(0, state.battery - (Math.random() * 0.5));
+      // If battery < 5%, auto land
+      if (state.battery < 5) {
+        state.status = 'LANDING';
+        state.speed = 0;
+        setTimeout(() => { state.status = 'IDLE'; state.position.alt = 0; }, 2000);
       }
-    } catch (err) {
-      alert('Network error: ' + err.message);
+    } else if (state.status === 'LANDING') {
+      state.position.alt = Math.max(0, state.position.alt - 2);
+      state.speed = 0;
+      if (state.position.alt <= 0) {
+        state.status = 'IDLE';
+        state.position.alt = 0;
+      }
+    } else if (state.status === 'EMERGENCY') {
+      state.speed = 0;
+    }
+
+    updateUI(state);
+    drawCanvas(state);
+  }
+
+  // ─── Control functions (no API, just update state) ──────────
+  function takeoff(alt) {
+    if (state.status === 'FLYING') return;
+    state.status = 'FLYING';
+    state.position.alt = alt || 15;
+    state.speed = 0;
+    state.target = null;
+    if (!timer) {
+      timer = setInterval(simulateTelemetry, 1000);
     }
   }
 
-  // Takeoff (with default altitude 15m)
+  function moveTo(lat, lng, alt, speed) {
+    if (state.status !== 'FLYING') return;
+    state.target = { lat, lng, alt };
+    state.position.alt = alt;
+    state.speed = speed || 5;
+  }
+
+  function emergency() {
+    state.status = 'EMERGENCY';
+    state.speed = 0;
+    state.target = null;
+  }
+
+  function land() {
+    if (state.status === 'FLYING') {
+      state.status = 'LANDING';
+      state.speed = 0;
+      state.target = null;
+    }
+  }
+
+  // ─── Button bindings ──────────────────────────────────────────
   btnTakeoff.addEventListener('click', () => {
     const alt = prompt('Enter takeoff altitude (meters):', '15');
     if (alt === null) return;
@@ -439,56 +419,45 @@
       alert('Please enter a positive number.');
       return;
     }
-    sendCommand('takeoff', { altitude: altNum });
+    takeoff(altNum);
   });
 
-  // Move to waypoint
   btnMove.addEventListener('click', () => {
-    const lat = prompt('Enter target latitude (e.g., 48.8600):', '48.8600');
+    const lat = prompt('Target latitude:', '48.8600');
     if (lat === null) return;
-    const lng = prompt('Enter target longitude (e.g., 2.2960):', '2.2960');
+    const lng = prompt('Target longitude:', '2.2960');
     if (lng === null) return;
-    const alt = prompt('Enter target altitude (meters):', '25');
+    const alt = prompt('Target altitude (m):', '25');
     if (alt === null) return;
-    const speed = prompt('Enter speed (m/s, default 5):', '5');
+    const speed = prompt('Speed (m/s):', '5');
     if (speed === null) return;
 
     const latNum = parseFloat(lat);
     const lngNum = parseFloat(lng);
     const altNum = parseFloat(alt);
     const speedNum = parseFloat(speed) || 5;
-
     if (isNaN(latNum) || isNaN(lngNum) || isNaN(altNum) || isNaN(speedNum)) {
-      alert('Invalid numbers entered.');
+      alert('Invalid numbers.');
       return;
     }
-    sendCommand('move', {
-      latitude: latNum,
-      longitude: lngNum,
-      altitude: altNum,
-      speed: speedNum
-    });
+    moveTo(latNum, lngNum, altNum, speedNum);
   });
 
-  // Emergency hover
   btnEmergency.addEventListener('click', () => {
-    if (confirm('Engage emergency hover? (Stops all motion)')) {
-      sendCommand('emergency');
-    }
+    if (confirm('Engage emergency hover?')) emergency();
   });
 
-  // Land
   btnLand.addEventListener('click', () => {
-    if (confirm('Land the drone?')) {
-      sendCommand('land');
-    }
+    if (confirm('Land the drone?')) land();
   });
 
-  // ------------------------------------------------------------------
-  // Start periodic telemetry fetch
-  // ------------------------------------------------------------------
-  fetchTelemetry(); // initial call
-  setInterval(fetchTelemetry, 1000);
+  // ─── Initial render ──────────────────────────────────────────
+  updateUI(state);
+  drawCanvas(state);
+  // Start auto‑update even on IDLE (to animate battery, etc.)
+  if (!timer) {
+    timer = setInterval(simulateTelemetry, 1000);
+  }
 </script>
-</body>
+        </body>
   </html>
