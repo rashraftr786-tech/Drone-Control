@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🚁 Drone Cockpit</title>
   <style>
-    /* ------------------------------------------------------------------
-       GLOBAL & RESET
-    ------------------------------------------------------------------ */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -18,7 +15,6 @@
       align-items: center;
       padding: 20px;
     }
-
     .container {
       max-width: 1200px;
       width: 100%;
@@ -30,7 +26,6 @@
       box-shadow: 0 25px 50px -8px rgba(0,0,0,0.6);
       border: 1px solid rgba(255,255,255,0.1);
     }
-
     h1 {
       text-align: center;
       font-weight: 300;
@@ -41,8 +36,6 @@
       margin-bottom: 20px;
     }
     h1 span { font-weight: 600; background: linear-gradient(45deg, #f1c40f, #e67e22); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    /* Dashboard Grid */
     .dashboard {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -58,29 +51,13 @@
       border: 1px solid rgba(255,255,255,0.08);
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .stat-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-    .stat-card .label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: rgba(255,255,255,0.6);
-    }
-    .stat-card .value {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #fff;
-      margin-top: 4px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+    .stat-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); }
+    .stat-card .value { font-size: 1.6rem; font-weight: 700; color: #fff; margin-top: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     .stat-card .value.battery { color: #2ecc71; }
     .stat-card .value.warning { color: #f39c12; }
     .stat-card .value.danger { color: #e74c3c; }
     .stat-card .value.camera-status { font-size: 1.2rem; }
-
-    /* Camera & Gimbal extra cards */
     .camera-group {
       display: flex;
       flex-wrap: wrap;
@@ -88,14 +65,8 @@
       justify-content: center;
       margin: 10px 0 16px;
     }
-    .camera-group .stat-card {
-      flex: 1 0 120px;
-      background: rgba(0,0,0,0.25);
-      border-color: rgba(255,255,255,0.05);
-    }
-    .camera-group .stat-card .value {
-      font-size: 1.2rem;
-    }
+    .camera-group .stat-card { flex: 1 0 120px; background: rgba(0,0,0,0.25); border-color: rgba(255,255,255,0.05); }
+    .camera-group .stat-card .value { font-size: 1.2rem; }
     .recording-badge {
       display: inline-block;
       width: 12px;
@@ -105,13 +76,7 @@
       margin-right: 6px;
       animation: pulse 1.2s infinite;
     }
-    @keyframes pulse {
-      0% { opacity: 0.3; transform: scale(0.9); }
-      50% { opacity: 1; transform: scale(1.2); }
-      100% { opacity: 0.3; transform: scale(0.9); }
-    }
-
-    /* Canvas */
+    @keyframes pulse { 0% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.9); } }
     .canvas-wrapper {
       background: rgba(0,0,0,0.4);
       border-radius: 28px;
@@ -128,8 +93,6 @@
       background: #1a232c;
       box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
     }
-
-    /* Controls – Flight & Camera */
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -157,34 +120,17 @@
       justify-content: center;
       gap: 6px;
     }
-    .controls button:hover {
-      transform: translateY(-2px);
-      background: rgba(255,255,255,0.2);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-    .controls button:active {
-      transform: scale(0.95);
-    }
-    .controls button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
+    .controls button:hover { transform: translateY(-2px); background: rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+    .controls button:active { transform: scale(0.95); }
+    .controls button:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
     .controls button.takeoff { background: #2ecc71; border-color: #27ae60; color: #fff; }
     .controls button.land { background: #f39c12; border-color: #d68910; }
     .controls button.emergency { background: #e74c3c; border-color: #c0392b; }
     .controls button.move { background: #3498db; border-color: #2980b9; }
     .controls button.camera { background: #9b59b6; border-color: #8e44ad; }
     .controls button.camera.recording { background: #e74c3c; border-color: #c0392b; animation: pulse-bg 1.5s infinite; }
-    @keyframes pulse-bg {
-      0% { opacity: 0.8; }
-      50% { opacity: 1; box-shadow: 0 0 20px rgba(231,76,60,0.6); }
-      100% { opacity: 0.8; }
-    }
+    @keyframes pulse-bg { 0% { opacity: 0.8; } 50% { opacity: 1; box-shadow: 0 0 20px rgba(231,76,60,0.6); } 100% { opacity: 0.8; } }
     .controls button.gimbal { background: #1abc9c; border-color: #16a085; }
-
-    /* Status bar */
     #statusText {
       text-align: center;
       margin-top: 14px;
@@ -210,23 +156,8 @@
     .status-badge.flying { background: #2ecc71; color: #fff; }
     .status-badge.emergency { background: #e74c3c; color: #fff; }
     .status-badge.landing { background: #f39c12; color: #fff; }
-
-    #extraInfo {
-      color: rgba(255,255,255,0.6);
-      font-size: 0.9rem;
-    }
-
-    .footer {
-      text-align: center;
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.3);
-      margin-top: 18px;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      padding-top: 14px;
-      letter-spacing: 0.5px;
-    }
-
-    /* Responsive */
+    #extraInfo { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+    .footer { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; letter-spacing: 0.5px; }
     @media (max-width: 700px) {
       .container { padding: 16px; }
       .controls button { min-width: 70px; padding: 10px 14px; font-size: 0.8rem; }
@@ -239,7 +170,6 @@
 <div class="container">
   <h1>🚁 <span>Drone Cockpit</span></h1>
 
-  <!-- Main Stats -->
   <div class="dashboard" id="stats">
     <div class="stat-card"><div class="label">Status</div><div class="value" id="statusDisplay">IDLE</div></div>
     <div class="stat-card"><div class="label">Battery</div><div class="value battery" id="batteryDisplay">--%</div></div>
@@ -249,7 +179,6 @@
     <div class="stat-card"><div class="label">Position</div><div class="value" id="posDisplay" style="font-size:0.9rem;">--</div></div>
   </div>
 
-  <!-- Camera & Gimbal Stats -->
   <div class="camera-group" id="cameraStats">
     <div class="stat-card"><div class="label">📸 Photos</div><div class="value" id="photoCount">0</div></div>
     <div class="stat-card"><div class="label">🎥 Videos</div><div class="value" id="videoCount">0</div></div>
@@ -257,12 +186,10 @@
     <div class="stat-card"><div class="label">📐 Gimbal Pitch</div><div class="value" id="gimbalPitch">0°</div></div>
   </div>
 
-  <!-- Canvas -->
   <div class="canvas-wrapper">
     <canvas id="droneCanvas" width="800" height="450"></canvas>
   </div>
 
-  <!-- Control Buttons -->
   <div class="controls">
     <button class="takeoff" id="btnTakeoff">🛫 Takeoff</button>
     <button class="move" id="btnMove">📍 Waypoint</button>
@@ -273,7 +200,6 @@
     <button class="gimbal" id="btnGimbal">↕ Gimbal</button>
   </div>
 
-  <!-- Status Line -->
   <div id="statusText">
     <span class="status-badge idle" id="statusBadge">IDLE</span>
     <span id="extraInfo">Ready</span>
@@ -282,12 +208,7 @@
 </div>
 
 <script>
-  // ------------------------------------------------------------------
-  // Configuration
-  // ------------------------------------------------------------------
-  const API_BASE = 'http://localhost:3000/api';
-
-  // DOM refs
+  // ─── DOM refs ──────────────────────────────────────────────────────────
   const canvas = document.getElementById('droneCanvas');
   const ctx = canvas.getContext('2d');
 
@@ -312,36 +233,31 @@
   const btnVideo = document.getElementById('btnVideo');
   const btnGimbal = document.getElementById('btnGimbal');
 
-  let droneData = {};
+  // ─── State (no server, fully dummy) ──────────────────────────────────
+  let state = {
+    status: 'IDLE',
+    battery: 85,
+    position: { lat: 48.8584, lng: 2.2945, alt: 0 },
+    speed: 0,
+    heading: 45,
+    target: null,
+    camera: {
+      photoCount: 0,
+      videoCount: 0,
+      isRecording: false,
+      gimbalPitch: 0
+    }
+  };
 
-  // ------------------------------------------------------------------
-  // Helpers
-  // ------------------------------------------------------------------
+  let timer = null;
+
+  // ─── Helpers ──────────────────────────────────────────────────────────
   function getStatusBadgeClass(status) {
     const map = { 'IDLE': 'idle', 'FLYING': 'flying', 'EMERGENCY': 'emergency', 'LANDING': 'landing' };
     return map[status] || 'idle';
   }
 
-  // ------------------------------------------------------------------
-  // Fetch telemetry
-  // ------------------------------------------------------------------
-  async function fetchTelemetry() {
-    try {
-      const resp = await fetch(`${API_BASE}/telemetry`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      droneData = data;
-      updateUI(data);
-      drawCanvas(data);
-    } catch (err) {
-      console.error('Telemetry error:', err);
-      extraInfo.textContent = '⚠️ Connection error';
-    }
-  }
-
-  // ------------------------------------------------------------------
-  // Update UI
-  // ------------------------------------------------------------------
+  // ─── Update UI ────────────────────────────────────────────────────────
   function updateUI(data) {
     const status = data.status || 'IDLE';
     statusDisplay.textContent = status;
@@ -363,7 +279,6 @@
     const pos = data.position;
     if (pos) posDisplay.textContent = `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
 
-    // Camera
     const cam = data.camera || {};
     photoCount.textContent = cam.photoCount || 0;
     videoCount.textContent = cam.videoCount || 0;
@@ -372,7 +287,6 @@
     recordingStatus.style.color = isRec ? '#e74c3c' : '#95a5a6';
     gimbalPitch.textContent = (cam.gimbalPitch || 0) + '°';
 
-    // Extra info
     if (data.target) {
       const t = data.target;
       extraInfo.textContent = `🎯 Moving to (${t.lat.toFixed(5)}, ${t.lng.toFixed(5)}, ${t.alt}m)`;
@@ -380,7 +294,6 @@
       extraInfo.textContent = status === 'FLYING' ? '⏳ Hovering' : '🟢 Ready';
     }
 
-    // Buttons
     const isFlying = status === 'FLYING';
     const isIdle = status === 'IDLE';
     btnTakeoff.disabled = isFlying || status === 'EMERGENCY';
@@ -398,14 +311,11 @@
     }
   }
 
-  // ------------------------------------------------------------------
-  // Canvas drawing (with camera/gimbal info overlay)
-  // ------------------------------------------------------------------
+  // ─── Canvas drawing ──────────────────────────────────────────────────
   function drawCanvas(data) {
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    // Grid
     ctx.strokeStyle = '#3a4a5a';
     ctx.lineWidth = 0.5;
     for (let i = 0; i < w; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke(); }
@@ -420,7 +330,6 @@
       const x = Math.min(Math.max(w/2 + dx, 20), w - 20);
       const y = Math.min(Math.max(h/2 - dy, 20), h - 20);
 
-      // Drone body
       ctx.shadowColor = 'rgba(46, 204, 113, 0.4)';
       ctx.shadowBlur = 25;
       ctx.beginPath();
@@ -429,7 +338,6 @@
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Heading
       const headingRad = data.heading * Math.PI / 180;
       const length = 32;
       ctx.beginPath();
@@ -439,13 +347,11 @@
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Alt label
       ctx.fillStyle = '#fff';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`alt: ${pos.alt.toFixed(1)}m`, x, y - 30);
 
-      // Gimbal pitch indicator (small arc)
       const pitch = data.camera?.gimbalPitch || 0;
       const pitchRad = pitch * Math.PI / 180;
       ctx.beginPath();
@@ -457,7 +363,6 @@
       ctx.font = '10px sans-serif';
       ctx.fillText(`📐${pitch}°`, x + 28, y - 6);
 
-      // Target
       if (data.target) {
         const tdx = (data.target.lng - centerLng) / scale;
         const tdy = (data.target.lat - centerLat) / scale;
@@ -475,7 +380,6 @@
         ctx.fillText('🎯', tx - 12, ty - 12);
       }
 
-      // Recording indicator on canvas
       if (data.camera?.isRecording) {
         ctx.fillStyle = '#e74c3c';
         ctx.beginPath();
@@ -494,33 +398,102 @@
     }
   }
 
-  // ------------------------------------------------------------------
-  // Command helpers
-  // ------------------------------------------------------------------
-  async function sendCommand(endpoint, payload = {}) {
-    try {
-      const resp = await fetch(`${API_BASE}/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const result = await resp.json();
-      if (!resp.ok) alert(`Error: ${result.error || 'Unknown'}`);
-      else console.log('Command success:', result);
-    } catch (err) {
-      alert('Network error: ' + err.message);
+  // ─── Simulation loop ──────────────────────────────────────────────────
+  function simulateTelemetry() {
+    if (state.status === 'FLYING') {
+      // Random walk
+      state.position.lat += (Math.random() - 0.5) * 0.0002;
+      state.position.lng += (Math.random() - 0.5) * 0.0002;
+      state.position.alt += (Math.random() - 0.5) * 0.5;
+      state.heading = (state.heading + (Math.random() - 0.5) * 4) % 360;
+      state.speed = 2 + Math.random() * 4;
+      state.battery = Math.max(0, state.battery - (Math.random() * 0.3));
+      if (state.battery < 5) {
+        state.status = 'LANDING';
+        state.speed = 0;
+        setTimeout(() => { state.status = 'IDLE'; state.position.alt = 0; }, 2000);
+      }
+    } else if (state.status === 'LANDING') {
+      state.position.alt = Math.max(0, state.position.alt - 2);
+      state.speed = 0;
+      if (state.position.alt <= 0) { state.status = 'IDLE'; state.position.alt = 0; }
+    } else if (state.status === 'EMERGENCY') {
+      state.speed = 0;
+    }
+    // Camera recording – automatically increments video duration (just dummy)
+    if (state.camera.isRecording) {
+      // could add a timer, but no UI for duration
+    }
+    updateUI(state);
+    drawCanvas(state);
+  }
+
+  // ─── Control functions (no server) ──────────────────────────────────
+  function takeoff(alt) {
+    if (state.status === 'FLYING') return;
+    state.status = 'FLYING';
+    state.position.alt = alt || 15;
+    state.speed = 0;
+    state.target = null;
+    if (!timer) {
+      timer = setInterval(simulateTelemetry, 1000);
     }
   }
 
-  // ------------------------------------------------------------------
-  // Event listeners
-  // ------------------------------------------------------------------
+  function moveTo(lat, lng, alt, speed) {
+    if (state.status !== 'FLYING') return;
+    state.target = { lat, lng, alt };
+    state.position.alt = alt;
+    state.speed = speed || 5;
+  }
+
+  function emergency() {
+    state.status = 'EMERGENCY';
+    state.speed = 0;
+    state.target = null;
+  }
+
+  function land() {
+    if (state.status === 'FLYING') {
+      state.status = 'LANDING';
+      state.speed = 0;
+      state.target = null;
+    }
+  }
+
+  function takePhoto() {
+    if (state.status !== 'FLYING') return;
+    state.camera.photoCount = (state.camera.photoCount || 0) + 1;
+    updateUI(state);
+    drawCanvas(state);
+  }
+
+  function toggleRecording() {
+    if (state.status !== 'FLYING') return;
+    state.camera.isRecording = !state.camera.isRecording;
+    if (state.camera.isRecording) {
+      // video count increments when stopped, but we'll increment on stop
+    } else {
+      state.camera.videoCount = (state.camera.videoCount || 0) + 1;
+    }
+    updateUI(state);
+    drawCanvas(state);
+  }
+
+  function setGimbal(angle) {
+    if (state.status !== 'FLYING') return;
+    state.camera.gimbalPitch = Math.min(Math.max(angle, -90), 90);
+    updateUI(state);
+    drawCanvas(state);
+  }
+
+  // ─── Button listeners ──────────────────────────────────────────────────
   btnTakeoff.addEventListener('click', () => {
     const alt = prompt('Altitude (m):', '15');
     if (alt === null) return;
     const a = parseFloat(alt);
     if (isNaN(a) || a <= 0) return alert('Positive number');
-    sendCommand('takeoff', { altitude: a });
+    takeoff(a);
   });
 
   btnMove.addEventListener('click', () => {
@@ -534,47 +507,34 @@
     if (speed === null) return;
     const latNum = parseFloat(lat), lngNum = parseFloat(lng), altNum = parseFloat(alt), speedNum = parseFloat(speed) || 5;
     if (isNaN(latNum) || isNaN(lngNum) || isNaN(altNum) || isNaN(speedNum)) return alert('Invalid numbers');
-    sendCommand('move', { latitude: latNum, longitude: lngNum, altitude: altNum, speed: speedNum });
+    moveTo(latNum, lngNum, altNum, speedNum);
   });
 
   btnEmergency.addEventListener('click', () => {
-    if (confirm('Emergency hover?')) sendCommand('emergency');
+    if (confirm('Emergency hover?')) emergency();
   });
 
   btnLand.addEventListener('click', () => {
-    if (confirm('Land?')) sendCommand('land');
+    if (confirm('Land?')) land();
   });
 
-  btnPhoto.addEventListener('click', () => {
-    sendCommand('camera/photo');
-  });
+  btnPhoto.addEventListener('click', takePhoto);
 
-  btnVideo.addEventListener('click', () => {
-    const isRec = droneData.camera?.isRecording;
-    if (isRec) {
-      sendCommand('camera/video/stop');
-    } else {
-      sendCommand('camera/video/start');
-    }
-  });
+  btnVideo.addEventListener('click', toggleRecording);
 
   btnGimbal.addEventListener('click', () => {
-    const angle = prompt('Gimbal pitch angle (-90 to +90, negative = down):', '0');
+    const angle = prompt('Gimbal pitch (-90 to +90):', '0');
     if (angle === null) return;
     const a = parseFloat(angle);
     if (isNaN(a) || a < -90 || a > 90) return alert('Angle must be between -90 and 90');
-    sendCommand('gimbal/pitch', { angle: a });
+    setGimbal(a);
   });
 
-  // ------------------------------------------------------------------
-  // Start periodic updates
-  // ------------------------------------------------------------------
-  fetchTelemetry();
-  setInterval(fetchTelemetry, 1000);
+  // ─── Initial render ──────────────────────────────────────────────────
+  updateUI(state);
+  drawCanvas(state);
+  // Start simulation loop immediately (even idle, to show battery drain)
+  if (!timer) timer = setInterval(simulateTelemetry, 1000);
 </script>
 </body>
 </html>
-  
-  
-  
-          
